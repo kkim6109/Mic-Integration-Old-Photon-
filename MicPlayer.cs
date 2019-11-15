@@ -14,9 +14,11 @@ public class MicPlayer
 
     // Maybe an Icon as well if wanted
 
+    // Add a way to remove yourself from the list of receivers, like sending a float[] of { 0.173 } or something
+
     // Sets up the mic player, not much else
     public MicPlayer(int pID)
-    {
+    { // Replace CacheGameObject with GameObject
         if (CacheGameObject.Find("MainCamera").GetComponent<AudioSource>() == null)
         {
             CacheGameObject.Find("MainCamera").AddComponent<AudioSource>();
@@ -51,7 +53,7 @@ public class MicPlayer
     {
         clipQueue.Enqueue(clip);
         if (!clipProcess)
-        {
+        { // .fengGame. is an instance of the FengGameManagerMKII object, rc uses .instance. vanilla uses their own or finds MultiplayerManager
             FengGameManagerMKII.fengGame.StartCoroutine(waitTimeTillNext());
         }
     }
