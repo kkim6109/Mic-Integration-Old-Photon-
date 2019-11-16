@@ -201,7 +201,7 @@ public class MicGUI : UnityEngine.MonoBehaviour
                 }
             }
             GUILayout.EndHorizontal();
-            
+
 
             // GUI Assignment
             GUILayout.BeginHorizontal();
@@ -258,7 +258,7 @@ public class MicGUI : UnityEngine.MonoBehaviour
             {
                 buttonText = "Connect To Voice";
             }
-            
+
             Color oldCol = buttonStyle.normal.textColor;
 
             if (MicEF.disconnected)
@@ -292,6 +292,11 @@ public class MicGUI : UnityEngine.MonoBehaviour
 
             GUILayout.EndVertical();
             GUILayout.EndScrollView();
+        }
+        else if (selection == 2) // Credits, Please keep this in as I worked hard on this
+        {
+            GUILayout.Label("Main Developer: Elite Future(Kevin) - Discord:Elite Future#1043");
+            GUILayout.Label("Data Compression: Sadico");
         }
 
         GUILayout.EndArea();
