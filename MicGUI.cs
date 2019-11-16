@@ -345,15 +345,8 @@ public class MicGUI : UnityEngine.MonoBehaviour
         float desiredHeight = Math.Min(Screen.height, 1080);
         float width = Convert.ToSingle(desiredWidth / 2.4);
         float height = Convert.ToSingle(desiredHeight/ 2.4);
-        if (micRect != null)
-        {
-            micRect.height = height;
-            micRect.width = width;
-        }
-        else
-        {
-            micRect = new Rect(Screen.width - width, Screen.height - height, width, height);
-        }
+
+        micRect = new Rect(Screen.width - width, Screen.height - height, width, height);
         micAreaRect = new Rect(10, height / 8, width - 20, height / 8 * 7 - 10);
         micOptionsRect = new Rect(10, 10, width - 20, height / 8);
         labelLength = micAreaRect.width / 8 * 6;
