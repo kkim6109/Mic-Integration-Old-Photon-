@@ -7,10 +7,13 @@ using UnityEngine;
 public class MicPlayer
 {
     private float micModifier = 1f; // Used to adjust audio wait times(Look in the IEnum)
-    private bool clipProcess = false; // To know if the IEnum is running
+    public bool clipProcess = false; // To know if the IEnum is running
     private Queue<AudioClip> clipQueue = new Queue<AudioClip>(); // Queue of clips itself
     private int playerID = -1;
     private float micVolume = 1.5f;
+    public string name;
+    private bool muted;
+    public bool mutedYou;
 
     // Maybe an Icon as well if wanted
 
@@ -24,6 +27,20 @@ public class MicPlayer
             CacheGameObject.Find("MainCamera").AddComponent<AudioSource>();
         }
         playerID = pID;
+        PhotonPlayer player = PhotonPlayer.Find(playerID);
+        if (player.customProperties.ContainsKey("name"))
+        {
+            name = (string)player.customProperties["name"];
+        }
+        mutedYou = false;
+    }
+
+    public bool isMuted
+    {
+        get
+        {
+            return muted;
+        }
     }
 
     // Potential use for future identification
@@ -67,11 +84,8 @@ public class MicPlayer
         }
         if (clipQueue.Count > 0)
         {
-            // Debug to see how the long the queue is
-            RPCList.add(clipQueue.Count + "");
-
             AudioClip clip = clipQueue.Dequeue();
-            CacheGameObject.Find("MainCamera").GetComponent<AudioSource>().PlayOneShot(clip, micVolume);
+            CacheGameObject.Find("MainCamera").GetComponent<AudioSource>().PlayOneShot(clip, micVolume * MicEF.volumeMultiplier);
 
             // This makes it so that the queue doesn't get too long, the stiched audios also sounds a bit better at 0.98, but otherwise unnoticeable
             if (micModifier == 1f && clipQueue.Count >= 4)
@@ -92,6 +106,36 @@ public class MicPlayer
         else
         {
             clipProcess = false;
+        }
+    }
+
+    // Mutes player
+    public void mute(bool enabled)
+    {
+        muted = enabled;
+        if (enabled)
+        {
+            RaiseEventOptions raised = new RaiseEventOptions();
+            raised.TargetActors = new int[] { playerID };
+            PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[] { (byte)254 }, true, raised);
+            MicEF.muteList.Add(playerID);
+            if (MicEF.adjustableList.Contains(playerID))
+            {
+                MicEF.adjustableList.Remove(playerID);
+                MicEF.recompileSendList();
+            }
+        }
+        else if (MicEF.muteList.Contains(playerID))
+        {
+            MicEF.muteList.Remove(playerID);
+            RaiseEventOptions raised = new RaiseEventOptions();
+            raised.TargetActors = new int[] { playerID };
+            PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[] { (byte)255 }, true, raised);
+            if (!MicEF.adjustableList.Contains(playerID))
+            {
+                MicEF.adjustableList.Add(playerID);
+                MicEF.recompileSendList();
+            }
         }
     }
 }
