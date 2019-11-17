@@ -196,6 +196,7 @@ public class MicEF : MonoBehaviour
                 byte[] bytes = GzipData(samples);
                 if (bytes.Length < 12000)
                 {
+                    RPCList.add(bytes.Length + "");
                     PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, bytes, false, raised);
                 }
                 else
@@ -279,7 +280,11 @@ try // In case there isn't a float[], quick and ez for lazy people to do
     }
     byte[] bytes = (byte[])photonEvent[0xf5];
 
-    if (bytes.Length < 4) // 1 float requires at least 4 bytes
+    if (bytes.Length >= 12000) // Too large for a message
+    {
+        return;
+    }
+    else if (bytes.Length < 4) // 1 float requires at least 4 bytes
     {
         if (!MicEF.users.ContainsKey(sender.ID))
         {
@@ -338,6 +343,10 @@ try // In case there isn't a float[], quick and ez for lazy people to do
         {
             AudioClip clip = AudioClip.Create(UnityEngine.Random.Range(float.MinValue, float.MaxValue) + "", f.Length, 1, (int)MicEF.FREQUENCY - MicEF.DECREASE, true, false);
             clip.SetData(f, 0);
+            if (clip.length > 0.9f) // Message is 3x larger than normal
+            {
+                return;
+            }
             MicEF.users[sender.ID].add(clip);
         }
     }
