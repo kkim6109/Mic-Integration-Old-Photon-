@@ -30,7 +30,7 @@ public class MicPlayer
         PhotonPlayer player = PhotonPlayer.Find(playerID);
         if (player.customProperties.ContainsKey("name"))
         {
-            name = (string)player.customProperties["name"];
+            name = player.customProperties["name"].ToString().hexColor();
         }
         mutedYou = false;
     }
