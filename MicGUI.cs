@@ -23,9 +23,15 @@ public class MicGUI : UnityEngine.MonoBehaviour
     private GUIStyle micStyle;
     private GUIStyle areaStyle;
     private GUIStyle buttonStyle;
+    private Color buttonGUIColor = new Color(0f, 0.2314f, 0.4588f);
+    private bool dropDown;
+    private Vector2 micScroll;
+    private Vector2 clickPos;
+    private Rect deviceRect;
 
     public void Start()
     {
+        dropDown = false;
         if (PlayerPrefs.HasKey("voiceKey"))
         {
             guiKey = (KeyCode)PlayerPrefs.GetInt("voiceKey");
@@ -52,22 +58,31 @@ public class MicGUI : UnityEngine.MonoBehaviour
         areaStyle.normal.background = areaBack; // inner area GUI color
         
         Texture2D buttonBack = new Texture2D(1, 1);
-        buttonBack.SetPixel(0, 0, new Color(0f, 0.2314f, 0.4588f));
+        buttonBack.SetPixel(0, 0, buttonGUIColor);
         buttonBack.Apply();
         buttonStyle = new GUIStyle();
-        buttonStyle.normal.background = buttonBack; // Normal color
+        buttonStyle.normal.background = buttonBack; // Normal button color
         Texture2D buttonAct = new Texture2D(1, 1);
-        buttonAct.SetPixel(0, 0, new Color(0f, 0.1843f, 0.3686f));
+        buttonAct.SetPixel(0, 0, adjustColor(buttonGUIColor, 0.75f)); // 25% darker
         buttonAct.Apply();
-        buttonStyle.active.background = buttonAct; // Press Color
+        buttonStyle.active.background = buttonAct; // Press button Color
         buttonStyle.active.textColor = new Color(0.149f, 0.149f, 0.149f); // active text color
         Texture2D buttonHov = new Texture2D(1, 1);
-        buttonHov.SetPixel(0, 0, new Color(0f, 0.2902f, 0.5725f));
+        buttonHov.SetPixel(0, 0, adjustColor(buttonGUIColor, 1.25f)); // 25% brighter
         buttonHov.Apply();
-        buttonStyle.hover.background = buttonHov; // Hover color
+        buttonStyle.hover.background = buttonHov; // Hover button color
         buttonStyle.hover.textColor = new Color(0.149f, 0.149f, 0.149f); // hover text color
         buttonStyle.normal.textColor = Color.white; // normal text Color
         buttonStyle.alignment = TextAnchor.MiddleCenter; // Aligns text to center
+        buttonStyle.wordWrap = true;
+    }
+
+    public static Color adjustColor(Color col, float adjustment)
+    {
+        float red = col.r * adjustment;
+        float green = col.g * adjustment;
+        float blue = col.b * adjustment;
+        return new Color(red, green, blue);
     }
 
     // Transparent overlay GUI to show who is talking
@@ -100,14 +115,17 @@ public class MicGUI : UnityEngine.MonoBehaviour
         if (GUILayout.Button("User List", buttonStyle))
         {
             selection = 0;
+            dropDown = false;
         }
         else if (GUILayout.Button("Options", buttonStyle))
         {
             selection = 1;
+            dropDown = false;
         }
         else if (GUILayout.Button("Credits", buttonStyle))
         {
             selection = 2;
+            dropDown = false;
         }
 
         GUILayout.EndHorizontal();
@@ -240,6 +258,33 @@ public class MicGUI : UnityEngine.MonoBehaviour
                 PlayerPrefs.SetFloat("volumeMultiplier", MicEF.volumeMultiplier);
             }
 
+
+            // Device Name
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("Microphone: ");
+
+            string micButtonText = "Default";
+            if (MicEF.deviceName.Length > 0)
+            {
+                micButtonText = MicEF.deviceName;
+                if (micButtonText.StartsWith("Microphone ("))
+                {
+                    micButtonText = micButtonText.Remove(0, 12);
+                    micButtonText = micButtonText.Substring(0, micButtonText.Length - 1);
+                }
+            }
+            
+            if (GUILayout.Button(micButtonText, buttonStyle))
+            {
+                clickPos = GUIUtility.GUIToScreenPoint(Event.current.mousePosition);
+                deviceRect = new Rect(clickPos.x - micAreaRect.width / 5f, clickPos.y + 5, micAreaRect.width / 2.5f, micAreaRect.height);
+                dropDown = !dropDown;
+            }
+            
+            GUILayout.EndHorizontal();
+
+
             // Auto Connect
             GUILayout.BeginHorizontal();
             GUILayout.Label("Auto Conneect:");
@@ -307,12 +352,34 @@ public class MicGUI : UnityEngine.MonoBehaviour
         }
     }
 
+    // GUI to allow the user to change microphones
+    public void deviceList(int ID)
+    {// Maybe add a scroll view later
+        float butHeight = micAreaRect.height / 10;
+        GUILayout.BeginVertical();
+
+        foreach (string str in Microphone.devices)
+        {
+            string butText = str.Remove(0, 12);
+            butText = butText.Substring(0, butText.Length - 1);
+            float height = micAreaRect.height / 12;
+            if (GUILayout.Button(butText, buttonStyle))
+            {
+                MicEF.deviceName = str;
+                dropDown = false;
+                PlayerPrefs.SetString("micDevice", str);
+            }
+        }
+        GUILayout.EndVertical();
+    }
+
     // Just to turn on the GUI, didn't work properly in OnGUI
     public void Update()
     {
         if (Input.GetKeyDown(guiKey) && PhotonNetwork.room != null)
         {
             guiOn = !guiOn;
+            dropDown = false;
         }
     }
     
@@ -332,6 +399,10 @@ public class MicGUI : UnityEngine.MonoBehaviour
             }
             if (guiOn)
             {
+                if (dropDown)
+                {
+                    deviceRect = GUI.Window(1733, deviceRect, this.deviceList, "", overlayStyle);
+                }
                 micRect = GUI.Window(1732, micRect, this.mainGUI, "", micStyle);
             }
         }

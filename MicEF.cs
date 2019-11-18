@@ -23,6 +23,7 @@ public class MicEF : MonoBehaviour
     public static float volumeMultiplier = 1f;
     public static bool disconnected;
     public static bool autoConnect = true;
+    public static string deviceName = "";
 
     public void Start()
     {
@@ -41,6 +42,10 @@ public class MicEF : MonoBehaviour
         if (PlayerPrefs.HasKey("volumeMultiplier"))
         {
             volumeMultiplier = PlayerPrefs.GetFloat("volumeMultiplier");
+        }
+        if (PlayerPrefs.HasKey("micDevice"))
+        {
+            deviceName = PlayerPrefs.GetString("micDevice");
         }
         disconnected = !autoConnect;
         sendList = new int[0];
@@ -121,7 +126,7 @@ public class MicEF : MonoBehaviour
                 raised.Receivers = ReceiverGroup.Others;
                 PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[0], true, raised);
 
-                c = Microphone.Start(null, true, 100, (int)FREQUENCY);
+                c = Microphone.Start(deviceName, true, 100, (int)FREQUENCY);
 
                 threadID = UnityEngine.Random.Range(0, Int32.MaxValue);
                 new Thread(() =>
@@ -140,13 +145,13 @@ public class MicEF : MonoBehaviour
                             if (ID != threadID)
                             {
                                 lastPos = 0;
-                                Microphone.End(null);
+                                Microphone.End(deviceName);
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        RPCList.add(e.Message); // Debugger
+                        //RPCList.add(e.Message); // Debugger
                     }
                 }).Start();
             }
@@ -181,7 +186,7 @@ public class MicEF : MonoBehaviour
     {
         if (adjustableList.Count > 0)
         {
-            int pos = Microphone.GetPosition(null);
+            int pos = Microphone.GetPosition(deviceName);
             if (pos < lastPos) // If the microphone loops, the last sample needs to loop too
             {
                 lastPos = 0;
@@ -196,12 +201,11 @@ public class MicEF : MonoBehaviour
                 byte[] bytes = GzipData(samples);
                 if (bytes.Length < 12000)
                 {
-                    RPCList.add(bytes.Length + "");
                     PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, bytes, false, raised);
                 }
                 else
                 {
-                    RPCList.add("Packet too large: " + bytes.Length);
+                    //RPCList.add("Packet too large: " + bytes.Length);
                 }
             }
             lastPos = pos;
@@ -353,7 +357,7 @@ try // In case there isn't a float[], quick and ez for lazy people to do
 }
 catch (Exception e)
 {
-    RPCList.add(e.Message); // Debugger
+    //RPCList.add(e.Message); // Debugger
 }
 return;
 */

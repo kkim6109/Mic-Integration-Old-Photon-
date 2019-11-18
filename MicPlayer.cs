@@ -21,10 +21,10 @@ public class MicPlayer
 
     // Sets up the mic player, not much else
     public MicPlayer(int pID)
-    { // Replace CacheGameObject with GameObject
-        if (CacheGameObject.Find("MainCamera").GetComponent<AudioSource>() == null)
+    {
+        if (GameObject.Find("MainCamera").GetComponent<AudioSource>() == null)
         {
-            CacheGameObject.Find("MainCamera").AddComponent<AudioSource>();
+            GameObject.Find("MainCamera").AddComponent<AudioSource>();
         }
         playerID = pID;
         PhotonPlayer player = PhotonPlayer.Find(playerID);
@@ -85,7 +85,7 @@ public class MicPlayer
         if (clipQueue.Count > 0)
         {
             AudioClip clip = clipQueue.Dequeue();
-            CacheGameObject.Find("MainCamera").GetComponent<AudioSource>().PlayOneShot(clip, micVolume * MicEF.volumeMultiplier);
+            GameObject.Find("MainCamera").GetComponent<AudioSource>().PlayOneShot(clip, micVolume * MicEF.volumeMultiplier);
 
             // This makes it so that the queue doesn't get too long, the stiched audios also sounds a bit better at 0.98, but otherwise unnoticeable
             if (micModifier == 1f && clipQueue.Count >= 4)
