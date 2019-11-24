@@ -173,8 +173,10 @@ public class MicEF : MonoBehaviour
     }
 
     // Used to show their name while they talk
-    public void OnPhotonPlayerPropertiesChanged(PhotonPlayer player, ExitGames.Client.Photon.Hashtable hash)
+    public void OnPhotonPlayerPropertiesChanged(object[] playerAndUpdatedProps)
     {
+        PhotonPlayer player = playerAndUpdatedProps[0] as PhotonPlayer;
+        ExitGames.Client.Photon.Hashtable hash = playerAndUpdatedProps[1] as ExitGames.Client.Photon.Hashtable;
         if (hash.ContainsKey("name") && users.ContainsKey(player.ID))
         {
             users[player.ID].name = hash["name"].ToString().hexColor(); // converts [color] to <color=#color> using rc's because it's the most used, there are more efficient ones though
