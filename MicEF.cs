@@ -24,6 +24,9 @@ public class MicEF : MonoBehaviour
     public static bool disconnected;
     public static bool autoConnect = true;
     public static string deviceName = "";
+    public static bool autoMute = false;
+    public static bool toggleMic = false;
+    private bool micToggled = false;
 
     public void Start()
     {
@@ -37,6 +40,22 @@ public class MicEF : MonoBehaviour
             if (str.ToLower().StartsWith("f"))
             {
                 autoConnect = false;
+            }
+        }
+        if (PlayerPrefs.HasKey("voiceAutoMute"))
+        {
+            string str = PlayerPrefs.GetString("voiceAutoMute");
+            if (str.ToLower().StartsWith("t"))
+            {
+                autoMute = true;
+            }
+        }
+        if (PlayerPrefs.HasKey("voiceToggleMic"))
+        {
+            string str = PlayerPrefs.GetString("voiceToggleMic");
+            if (str.ToLower().StartsWith("t"))
+            {
+                toggleMic = true;
             }
         }
         if (PlayerPrefs.HasKey("volumeMultiplier"))
@@ -87,6 +106,21 @@ public class MicEF : MonoBehaviour
         }
     }
 
+    // Resets the player stuff on restarts
+    private void OnLevelWasLoaded(int level)
+    {
+        if (Camera.main.gameObject.GetComponent<AudioSource>() == null)
+        {
+            Camera.main.gameObject.AddComponent<AudioSource>();
+        }
+        foreach (KeyValuePair<int, MicPlayer> entry in MicEF.users)
+        {
+            MicPlayer player = entry.Value;
+
+            player.refreshInformation();
+        }
+    }
+
     // Adds a person to the voice sending list
     public static void addPerson(int addID)
     {
@@ -101,6 +135,11 @@ public class MicEF : MonoBehaviour
             RaiseEventOptions raised = new RaiseEventOptions();
             raised.TargetActors = new int[] { addID };
             PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[0], true, raised);
+
+            if (autoMute)
+            {
+                users[addID].mute(true);
+            }
         }
     }
 
@@ -115,12 +154,17 @@ public class MicEF : MonoBehaviour
     {
         if (!disconnected)
         {
-            if (Input.GetKeyUp(pushToTalk))
+            if (threadID != -1 && ((!toggleMic && (Input.GetKeyUp(pushToTalk) || !Input.GetKey(pushToTalk))) || (toggleMic && micToggled && Input.GetKeyDown(pushToTalk))))
             {
                 threadID = -1;
+                micToggled = false;
             }
-            else if (Input.GetKey(pushToTalk) && threadID == -1)
+            else if (Input.GetKeyDown(pushToTalk) && threadID == -1)
             {
+                if (toggleMic)
+                {
+                    micToggled = true;
+                }
                 // Too lazy to actually put this onto onjoin, so ez pz send that you have mic to everyone every time you use your mic
                 RaiseEventOptions raised = new RaiseEventOptions();
                 raised.Receivers = ReceiverGroup.Others;

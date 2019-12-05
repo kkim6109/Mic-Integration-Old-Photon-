@@ -16,7 +16,6 @@ public class MicGUI : UnityEngine.MonoBehaviour
     private KeyCode guiKey = KeyCode.Backslash;
     private Rect micAreaRect;
     private float labelLength;
-    private bool changeVolume;
     private Rect micOptionsRect;
     private int changingKeys;
     private GUIStyle overlayStyle;
@@ -25,7 +24,6 @@ public class MicGUI : UnityEngine.MonoBehaviour
     private GUIStyle buttonStyle;
     private Color buttonGUIColor = new Color(0f, 0.2314f, 0.4588f);
     private bool dropDown;
-    private Vector2 micScroll;
     private Vector2 clickPos;
     private Rect deviceRect;
 
@@ -38,7 +36,6 @@ public class MicGUI : UnityEngine.MonoBehaviour
         }
 
         changingKeys = -1;
-        changeVolume = false;
         selection = 0;
         guiOn = false;
         appHeight = Screen.height;
@@ -166,11 +163,11 @@ public class MicGUI : UnityEngine.MonoBehaviour
 
                 if (GUILayout.Button("V", buttonStyle)) // Volume
                 {
-                    changeVolume = !changeVolume;
+                    player.changingVolume = !player.changingVolume;
                 }
 
                 GUILayout.EndHorizontal();
-                if (changeVolume)
+                if (player.changingVolume)
                 {
                     player.volume = GUILayout.HorizontalSlider(player.volume, 0f, 4f, new GUILayoutOption[0]);
                     if (!player.isMuted && player.volume == 0f)
@@ -189,9 +186,6 @@ public class MicGUI : UnityEngine.MonoBehaviour
         {
             controlSlider = GUILayout.BeginScrollView(controlSlider);
             GUILayout.BeginVertical();
-
-            GUILayout.Label("Controls:");
-
 
             // Voice Assignment
             GUILayout.BeginHorizontal();
@@ -285,14 +279,38 @@ public class MicGUI : UnityEngine.MonoBehaviour
             GUILayout.EndHorizontal();
 
 
+            //Auto Mute People On Join
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Auto Mute People On Join:");
+            bool autoMute = MicEF.autoMute;
+            MicEF.autoMute = GUILayout.Toggle(autoMute, "On");
+            if (autoMute != MicEF.autoMute)
+            {
+                PlayerPrefs.SetString("voiceAutoMute", MicEF.autoMute + "");
+            }
+            GUILayout.EndHorizontal();
+
+
             // Auto Connect
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Auto Conneect:");
+            GUILayout.Label("Auto Connect:");
             bool autoConnect = MicEF.autoConnect;
             MicEF.autoConnect = GUILayout.Toggle(autoConnect, "On");
             if (autoConnect != MicEF.autoConnect)
             {
-                PlayerPrefs.SetString("voiceAutoConnect", MicEF.disconnected + "");
+                PlayerPrefs.SetString("voiceAutoConnect", MicEF.autoConnect + "");
+            }
+            GUILayout.EndHorizontal();
+
+
+            // Toggle Mic
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Toggle Mic:");
+            bool toggleMic = MicEF.toggleMic;
+            MicEF.toggleMic = GUILayout.Toggle(toggleMic, "On");
+            if (toggleMic != MicEF.toggleMic)
+            {
+                PlayerPrefs.SetString("voiceToggleMic", MicEF.toggleMic + "");
             }
             GUILayout.EndHorizontal();
 

@@ -14,6 +14,7 @@ public class MicPlayer
     public string name;
     private bool muted;
     public bool mutedYou;
+    public bool changingVolume = false;
 
     // Maybe an Icon as well if wanted
 
@@ -109,32 +110,42 @@ public class MicPlayer
         }
     }
 
+    // Refreshes so the audio will work correctly
+    public void refreshInformation()
+    {
+        clipProcess = false;
+        clipQueue = new Queue<AudioClip>();
+    }
+
     // Mutes player
     public void mute(bool enabled)
     {
-        muted = enabled;
-        if (enabled)
+        if (!mutedYou)
         {
-            RaiseEventOptions raised = new RaiseEventOptions();
-            raised.TargetActors = new int[] { playerID };
-            PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[] { (byte)254 }, true, raised);
-            MicEF.muteList.Add(playerID);
-            if (MicEF.adjustableList.Contains(playerID))
+            muted = enabled;
+            if (enabled)
             {
-                MicEF.adjustableList.Remove(playerID);
-                MicEF.recompileSendList();
+                RaiseEventOptions raised = new RaiseEventOptions();
+                raised.TargetActors = new int[] { playerID };
+                PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[] { (byte)254 }, true, raised);
+                MicEF.muteList.Add(playerID);
+                if (MicEF.adjustableList.Contains(playerID))
+                {
+                    MicEF.adjustableList.Remove(playerID);
+                    MicEF.recompileSendList();
+                }
             }
-        }
-        else if (MicEF.muteList.Contains(playerID))
-        {
-            MicEF.muteList.Remove(playerID);
-            RaiseEventOptions raised = new RaiseEventOptions();
-            raised.TargetActors = new int[] { playerID };
-            PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[] { (byte)255 }, true, raised);
-            if (!MicEF.adjustableList.Contains(playerID))
+            else if (MicEF.muteList.Contains(playerID))
             {
-                MicEF.adjustableList.Add(playerID);
-                MicEF.recompileSendList();
+                MicEF.muteList.Remove(playerID);
+                RaiseEventOptions raised = new RaiseEventOptions();
+                raised.TargetActors = new int[] { playerID };
+                PhotonNetwork.networkingPeer.OpRaiseEvent((byte)173, new byte[] { (byte)255 }, true, raised);
+                if (!MicEF.adjustableList.Contains(playerID))
+                {
+                    MicEF.adjustableList.Add(playerID);
+                    MicEF.recompileSendList();
+                }
             }
         }
     }
