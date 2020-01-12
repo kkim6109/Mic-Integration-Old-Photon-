@@ -429,11 +429,19 @@ public class MicGUI : UnityEngine.MonoBehaviour
     // Fixes the GUI sizes
     private void adjustRect()
     {
-        overlayRect = new Rect(0, Screen.height / 2 - 100, 200, 200);
-        float desiredWidth = Math.Min(Screen.width, 1920); // Theoretically makes 4k screens still look okay(may need to change some other things though)
-        float desiredHeight = Math.Min(Screen.height, 1080);
-        float width = Convert.ToSingle(desiredWidth / 2.4);
-        float height = Convert.ToSingle(desiredHeight/ 2.4);
+        float desiredWidth = 1920; // Theoretically makes 4k screens still look okay(may need to change some other things though)
+        float desiredHeight = 1080;
+
+        if (Screen.width > 1920)
+        {
+            desiredWidth = Screen.width;
+        }
+        if (Screen.height > 1080)
+        {
+            desiredHeight = Screen.height;
+        }
+        float width = Convert.ToSingle(desiredWidth / 4.2);
+        float height = Convert.ToSingle(desiredHeight / 4.2);
 
         micRect = new Rect(Screen.width - width, Screen.height - height, width, height);
         micAreaRect = new Rect(10, height / 8, width - 20, height / 8 * 7 - 10);
