@@ -85,20 +85,28 @@ public class MicGUI : UnityEngine.MonoBehaviour
     // Transparent overlay GUI to show who is talking
     public void overlayGUI(int ID)
     {
-        GUILayout.BeginVertical();
-        if (MicEF.threadID != -1) // This sees if your mic is on
+        try
         {
-            GUILayout.Label("<b>(" + PhotonNetwork.player.ID + ") </b>" + PhotonNetwork.player.customProperties["name"].ToString().hexColor());
-        }
-        foreach (KeyValuePair<int, MicPlayer> entry in MicEF.users)
-        {
-            MicPlayer player = entry.Value;
-            if (player.clipProcess)
+            GUILayout.BeginVertical();
+            if (MicEF.threadID != -1) // This sees if your mic is on
             {
-                GUILayout.Label("<b>(" + entry.Key  + ") </b>" + entry.Value.name);
+                GUILayout.Label("<b>(" + PhotonNetwork.player.ID + ") </b>" + PhotonNetwork.player.customProperties["name"].ToString().hexColor());
+                RPCList.add("<b>(" + PhotonNetwork.player.ID + ") </b>" + PhotonNetwork.player.customProperties["name"].ToString().hexColor());
             }
+            foreach (KeyValuePair<int, MicPlayer> entry in MicEF.users)
+            {
+                MicPlayer player = entry.Value;
+                if (player.clipProcess)
+                {
+                    GUILayout.Label("<b>(" + entry.Key + ") </b>" + entry.Value.name);
+                }
+            }
+            GUILayout.EndVertical();
         }
-        GUILayout.EndVertical();
+        catch (Exception e)
+        {
+            RPCList.add(e.Message + " ~ " + e.StackTrace);
+        }
     }
 
     public void mainGUI(int ID)
@@ -404,25 +412,32 @@ public class MicGUI : UnityEngine.MonoBehaviour
     // Calls all GUIs
     public void OnGUI()
     {
-        if (PhotonNetwork.room != null)
+        try
         {
-            if (Screen.height != appHeight)
+            if (PhotonNetwork.room != null)
             {
-                appHeight = Screen.height;
-                adjustRect();
-            }
-            if (MicEF.users.Count > 0 || MicEF.threadID != -1)
-            {
-                overlayRect = GUI.Window(1731, overlayRect, this.overlayGUI, "", overlayStyle);
-            }
-            if (guiOn)
-            {
-                if (dropDown)
+                if (Screen.height != appHeight)
                 {
-                    deviceRect = GUI.Window(1733, deviceRect, this.deviceList, "", overlayStyle);
+                    appHeight = Screen.height;
+                    adjustRect();
                 }
-                micRect = GUI.Window(1732, micRect, this.mainGUI, "", micStyle);
+                if (MicEF.users.Count > 0 || MicEF.threadID != -1)
+                {
+                    overlayRect = GUI.Window(1731, overlayRect, this.overlayGUI, "", overlayStyle);
+                }
+                if (guiOn)
+                {
+                    if (dropDown)
+                    {
+                        deviceRect = GUI.Window(1733, deviceRect, this.deviceList, "", overlayStyle);
+                    }
+                    micRect = GUI.Window(1732, micRect, this.mainGUI, "", micStyle);
+                }
             }
+        }
+        catch (Exception e)
+        {
+            RPCList.add(e.Message + " ~ " + e.StackTrace);
         }
     }
 
@@ -443,6 +458,7 @@ public class MicGUI : UnityEngine.MonoBehaviour
         float width = Convert.ToSingle(desiredWidth / 4.2);
         float height = Convert.ToSingle(desiredHeight / 4.2);
 
+        overlayRect = new Rect(0, Screen.height / 2 - 100, 200, 200);
         micRect = new Rect(Screen.width - width, Screen.height - height, width, height);
         micAreaRect = new Rect(10, height / 8, width - 20, height / 8 * 7 - 10);
         micOptionsRect = new Rect(10, 10, width - 20, height / 8);
