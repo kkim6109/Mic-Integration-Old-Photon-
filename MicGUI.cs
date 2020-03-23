@@ -91,7 +91,7 @@ public class MicGUI : UnityEngine.MonoBehaviour
             if (MicEF.threadID != -1) // This sees if your mic is on
             {
                 GUILayout.Label("<b>(" + PhotonNetwork.player.ID + ") </b>" + PhotonNetwork.player.customProperties["name"].ToString().hexColor());
-                RPCList.add("<b>(" + PhotonNetwork.player.ID + ") </b>" + PhotonNetwork.player.customProperties["name"].ToString().hexColor());
+                //RPCList.add("<b>(" + PhotonNetwork.player.ID + ") </b>" + PhotonNetwork.player.customProperties["name"].ToString().hexColor());
             }
             foreach (KeyValuePair<int, MicPlayer> entry in MicEF.users)
             {
@@ -105,7 +105,7 @@ public class MicGUI : UnityEngine.MonoBehaviour
         }
         catch (Exception e)
         {
-            RPCList.add(e.Message + " ~ " + e.StackTrace);
+            //RPCList.add(e.Message + " ~ " + e.StackTrace);
         }
     }
 
@@ -437,7 +437,7 @@ public class MicGUI : UnityEngine.MonoBehaviour
         }
         catch (Exception e)
         {
-            RPCList.add(e.Message + " ~ " + e.StackTrace);
+            //RPCList.add(e.Message + " ~ " + e.StackTrace);
         }
     }
 
