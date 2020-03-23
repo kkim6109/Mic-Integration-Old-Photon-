@@ -71,8 +71,8 @@ public class MicPlayer
     {
         clipQueue.Enqueue(clip);
         if (!clipProcess)
-        { // .fengGame. is an instance of the FengGameManagerMKII object, rc uses .instance. vanilla uses their own or finds MultiplayerManager
-            FengGameManagerMKII.fengGame.StartCoroutine(waitTimeTillNext());
+        {
+            FengGameManagerMKII.instance.StartCoroutine(waitTimeTillNext());
         }
     }
 
@@ -102,7 +102,7 @@ public class MicPlayer
             yield return new WaitForSeconds(clip.length * micModifier);
 
             // Repeats the IEnum for the potential next audio clip
-            FengGameManagerMKII.fengGame.StartCoroutine(waitTimeTillNext());
+            FengGameManagerMKII.instance.StartCoroutine(waitTimeTillNext());
         }
         else
         {
